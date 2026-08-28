@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cahier Journal — FLE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Parisienne&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   CAHIER JOURNAL — FLE
+   Application web autonome (aucune dépendance, hors polices).
+   Palette pastel, ambiance douce et papeterie, priorité à l'usage.
+   ============================================================ */
+
+:root{
+  /* Roses poudrés */
+  --pink-50:#FDF4F7;  --pink-100:#FAE7EE;  --pink-200:#F5CEDC;
+  --pink-300:#EEA9BF;  --pink-400:#E288A2;
+  /* Bleus doux */
+  --blue-50:#F2F7FC;  --blue-100:#E3EDF8;  --blue-200:#C6D8EC;
+  --blue-300:#96B6D9;  --blue-ink:#4B678C; --blue-deep:#354F6E;
+  /* Neutres */
+  --paper:#FFFFFF;    --cream:#FFFCFD;     --line:#EFE3E9;
+  --text:#42506A;     --muted:#8B96AC;
+  --heart:#EF9BB2;    --ok:#5FA98A;        --amber:#D9A24E;
+  --radius:16px;      --radius-sm:11px;
+  --shadow:0 10px 30px -18px rgba(120,90,110,.45);
+  --shadow-soft:0 4px 14px -8px rgba(120,90,110,.35);
+  --ff-script:'Parisienne', 'Segoe Script', cursive;
+  --ff:'Quicksand', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:var(--ff);
+  color:var(--text);
+  background:
+    radial-gradient(1200px 500px at 8% -6%, var(--pink-50), transparent 60%),
+    radial-gradient(1000px 500px at 100% 0%, var(--blue-50), transparent 55%),
+    #FBF7F9;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- Décor discret d'ambiance (masqué à l'impression) ---------- */
+.decor{position:fixed;pointer-events:none;z-index:0;opacity:.55;}
+.decor.tl{top:-10px;left:-8px;width:150px;}
+.decor.br{bottom:-14px;right:-6px;width:150px;}
+.decor.mr{top:40%;right:-4px;width:70px;opacity:.4;}
+
+/* ---------- Ossature ---------- */
+.app{position:relative;z-index:1;max-width:1120px;margin:0 auto;padding:0 18px 90px;}
+
+/* ---------- En-tête ---------- */
+.topbar{
+  position:sticky;top:0;z-index:20;
+  background:rgba(255,252,253,.86);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);
+  margin:0 -18px 18px;padding:14px 18px 12px;
+}
+.brand{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.brand h1{
+  margin:0;font-family:var(--ff-script);font-weight:400;
+  font-size:clamp(30px,4.4vw,44px);line-height:1;color:var(--blue-deep);
+}
+.brand .tag{
+  display:inline-flex;align-items:center;gap:6px;
+  font-weight:700;letter-spacing:.14em;font-size:12px;color:var(--pink-400);
+  background:var(--pink-100);border:1px solid var(--pink-200);
+  padding:5px 11px;border-radius:999px;
+}
+.brand .subtitle{color:var(--muted);font-size:13.5px;font-weight:500;flex:1;min-width:180px;}
+.year{
+  display:inline-flex;align-items:center;gap:7px;
+  background:var(--blue-50);border:1px solid var(--blue-100);
+  border-radius:999px;padding:5px 8px 5px 13px;color:var(--blue-ink);font-weight:600;font-size:13px;
+}
+.year input{
+  border:none;background:transparent;font:inherit;color:var(--blue-deep);
+  width:98px;text-align:center;font-weight:700;
+}
+.year input:focus{outline:none;background:#fff;border-radius:8px;}
+
+.status{
+  margin-left:auto;display:inline-flex;align-items:center;gap:7px;
+  font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:999px;
+  border:1px solid transparent;transition:.25s;white-space:nowrap;
+}
+.status .dot{width:8px;height:8px;border-radius:50%;background:currentColor;}
+.status.saved{color:var(--ok);background:#EEF7F2;border-color:#D5EBE0;}
+.status.dirty{color:var(--amber);background:#FBF3E4;border-color:#F0E0C2;}
+
+/* ---------- Barre d'actions ---------- */
+.toolbar{
+  position:sticky;top:64px;z-index:18;
+  display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+  background:rgba(255,252,253,.82);backdrop-filter:blur(6px);
+  padding:8px 0 14px;margin-bottom:6px;
+}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;cursor:pointer;
+  font-family:var(--ff);font-weight:600;font-size:14px;
+  border-radius:12px;padding:10px 15px;border:1px solid var(--pink-200);
+  background:#fff;color:var(--text);transition:transform .12s, box-shadow .2s, background .2s, border-color .2s;
+  box-shadow:var(--shadow-soft);
+}
+.btn:hover{transform:translateY(-1px);box-shadow:var(--shadow);}
+.btn:active{transform:translateY(0);}
+.btn svg{width:17px;height:17px;flex:none;}
+.btn.primary{background:linear-gradient(135deg,var(--pink-300),var(--pink-400));color:#fff;border-color:transparent;}
+.btn.blue{background:linear-gradient(135deg,var(--blue-200),var(--blue-300));color:#fff;border-color:transparent;}
+.btn.ghost{background:transparent;box-shadow:none;border-color:var(--blue-100);color:var(--blue-ink);}
+.btn.sm{padding:7px 11px;font-size:13px;border-radius:10px;}
+.btn.icononly{padding:8px;border-radius:10px;}
+.btn.icononly svg{width:16px;height:16px;}
+
+/* ---------- Carte « journée » ---------- */
+.day{
+  background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);margin-bottom:26px;overflow:hidden;
+  border-top:4px solid var(--pink-200);
+}
+.day-head{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:15px 18px;border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,var(--pink-50),#fff);
+}
+.day-date{display:flex;align-items:center;gap:9px;}
+.day-date .lbl{font-family:var(--ff-script);font-size:26px;color:var(--blue-deep);line-height:1;}
+.day-date input[type=date]{
+  font:inherit;font-weight:600;color:var(--text);
+  border:1px solid var(--pink-200);background:#fff;border-radius:10px;padding:8px 11px;
+}
+.day-date input[type=date]:focus{outline:2px solid var(--pink-200);outline-offset:1px;}
+.day-actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;}
+
+/* ---------- Tableau des séances ---------- */
+.table-wrap{padding:6px 10px 4px;overflow-x:auto;}
+table.grid{width:100%;border-collapse:collapse;}
+table.grid thead th{
+  font-weight:600;color:var(--blue-ink);text-align:left;font-size:13px;
+  letter-spacing:.02em;padding:10px 10px;border-bottom:2px solid var(--pink-100);
+  white-space:nowrap;
+}
+table.grid thead th .th-in{display:inline-flex;align-items:center;gap:7px;}
+table.grid thead th svg{width:15px;height:15px;color:var(--pink-300);}
+table.grid tbody td{padding:7px 8px;vertical-align:top;border-bottom:1px dashed var(--blue-100);}
+table.grid tbody tr:last-child td{border-bottom:1px dashed var(--blue-100);}
+
+.cell-in, .cell-area{
+  width:100%;font:inherit;color:var(--text);
+  border:1px solid transparent;background:var(--blue-50);
+  border-radius:9px;padding:8px 10px;transition:.15s;
+}
+.cell-in:hover,.cell-area:hover{background:#fff;border-color:var(--pink-100);}
+.cell-in:focus,.cell-area:focus{outline:none;background:#fff;border-color:var(--pink-300);box-shadow:0 0 0 3px var(--pink-100);}
+.cell-area{resize:vertical;min-height:40px;line-height:1.45;}
+td.col-heure{width:104px;}
+td.col-classe{width:170px;}
+td.col-remarques{width:210px;}
+td.col-acts{min-width:230px;}
+td.col-tools{width:82px;white-space:nowrap;text-align:right;}
+
+.detail-badge{
+  display:inline-flex;align-items:center;gap:5px;margin-top:6px;
+  font-size:11.5px;font-weight:600;color:var(--blue-ink);
+  background:var(--blue-50);border:1px solid var(--blue-100);
+  border-radius:999px;padding:3px 9px;
+}
+.detail-badge.on{color:var(--pink-400);background:var(--pink-100);border-color:var(--pink-200);}
+
+.row-tools{display:inline-flex;gap:6px;}
+.tool{
+  border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px;
+  cursor:pointer;color:var(--muted);transition:.15s;line-height:0;
+}
+.tool:hover{color:var(--pink-400);border-color:var(--pink-200);background:var(--pink-50);}
+.tool.gear:hover{color:var(--blue-ink);border-color:var(--blue-200);background:var(--blue-50);}
+.tool svg{width:16px;height:16px;}
+
+.add-row{margin:4px 10px 12px;}
+
+/* ---------- Bilan de la journée ---------- */
+.bilan{border-top:1px solid var(--line);padding:14px 18px 18px;background:linear-gradient(180deg,#fff,var(--blue-50));}
+.bilan summary{
+  cursor:pointer;font-weight:600;color:var(--blue-ink);list-style:none;
+  display:flex;align-items:center;gap:8px;user-select:none;
+}
+.bilan summary::-webkit-details-marker{display:none;}
+.bilan summary svg{width:16px;height:16px;color:var(--pink-300);transition:.2s;}
+.bilan[open] summary svg.chev{transform:rotate(90deg);}
+.bilan textarea{
+  width:100%;margin-top:10px;min-height:74px;font:inherit;line-height:1.5;
+  border:1px solid var(--blue-100);border-radius:12px;padding:11px 13px;background:#fff;resize:vertical;
+}
+.bilan textarea:focus{outline:none;border-color:var(--pink-300);box-shadow:0 0 0 3px var(--pink-100);}
+
+/* ---------- État vide ---------- */
+.empty{
+  text-align:center;padding:56px 20px;color:var(--muted);
+  background:#fff;border:1px dashed var(--pink-200);border-radius:var(--radius);
+}
+.empty h2{font-family:var(--ff-script);font-size:34px;color:var(--blue-deep);margin:0 0 6px;font-weight:400;}
+
+/* ---------- Fenêtre « détails pédagogiques » ---------- */
+dialog{
+  border:none;border-radius:20px;padding:0;max-width:640px;width:calc(100% - 32px);
+  box-shadow:0 30px 70px -25px rgba(80,60,80,.55);color:var(--text);
+}
+dialog::backdrop{background:rgba(70,55,75,.32);backdrop-filter:blur(2px);}
+.modal-head{
+  display:flex;align-items:center;gap:10px;padding:18px 22px;
+  background:linear-gradient(135deg,var(--pink-100),var(--blue-100));border-bottom:1px solid var(--line);
+}
+.modal-head h3{margin:0;font-size:18px;color:var(--blue-deep);font-weight:700;}
+.modal-head .x{margin-left:auto;}
+.modal-body{padding:20px 22px;max-height:70vh;overflow:auto;}
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px;}
+.field{display:flex;flex-direction:column;gap:5px;}
+.field.wide{grid-column:1 / -1;}
+.field label{font-size:12.5px;font-weight:600;color:var(--blue-ink);}
+.field input,.field textarea{
+  font:inherit;color:var(--text);border:1px solid var(--blue-100);border-radius:10px;
+  padding:9px 11px;background:var(--blue-50);transition:.15s;
+}
+.field textarea{resize:vertical;min-height:52px;line-height:1.45;}
+.field input:focus,.field textarea:focus{outline:none;background:#fff;border-color:var(--pink-300);box-shadow:0 0 0 3px var(--pink-100);}
+.modal-foot{display:flex;gap:10px;justify-content:flex-end;padding:14px 22px 20px;border-top:1px solid var(--line);}
+
+/* ---------- Petit message flottant ---------- */
+.toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
+  background:var(--blue-deep);color:#fff;font-weight:600;font-size:14px;
+  padding:11px 18px;border-radius:12px;box-shadow:var(--shadow);
+  opacity:0;pointer-events:none;transition:.3s;z-index:60;display:flex;align-items:center;gap:9px;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast svg{width:17px;height:17px;}
+
+.hint{font-size:12.5px;color:var(--muted);text-align:center;margin:10px 0 0;}
+
+/* ---------- Responsive : le tableau devient des cartes empilées ---------- */
+@media (max-width:760px){
+  table.grid thead{display:none;}
+  table.grid, table.grid tbody, table.grid tr, table.grid td{display:block;width:100%;}
+  table.grid tbody tr{
+    border:1px solid var(--line);border-radius:14px;margin:0 4px 14px;padding:6px;
+    background:linear-gradient(180deg,#fff,var(--blue-50));
+  }
+  table.grid tbody td{border:none;padding:7px 8px;}
+  table.grid tbody td::before{
+    content:attr(data-label);display:block;font-size:11.5px;font-weight:700;
+    color:var(--pink-400);letter-spacing:.03em;margin-bottom:4px;
+  }
+  td.col-heure,td.col-classe,td.col-remarques{width:auto;}
+  td.col-tools{text-align:left;}
+  td.col-tools::before{display:none;}
+  .field-grid{grid-template-columns:1fr;}
+  .toolbar{top:60px;}
+}
+
+/* ============================================================
+   IMPRESSION — format A4, rendu proche de la fiche papier
+   ============================================================ */
+@page{size:A4;margin:14mm;}
+@media print{
+  body{background:#fff;}
+  .decor,.topbar .status,.toolbar,.day-actions,.row-tools,.add-row,
+  .detail-badge,.bilan summary svg,.hint,.toast{display:none !important;}
+  .app{max-width:none;padding:0;}
+  .topbar{position:static;border:none;background:none;margin:0 0 6mm;padding:0;}
+  .brand h1{color:#000;}
+  .day{
+    box-shadow:none;border:1.5px solid var(--pink-300);border-top-width:1.5px;
+    page-break-inside:avoid;break-inside:avoid;margin-bottom:8mm;
+  }
+  .day + .day{page-break-before:always;}
+  .day-head{background:none;}
+  .table-wrap{overflow:visible;padding:2mm 4mm;}
+  .cell-in,.cell-area,.day-date input,.year input,.field input,.field textarea{
+    border:none !important;background:transparent !important;box-shadow:none !important;padding:4px 2px;
+  }
+  table.grid tbody td{border-bottom:1px dashed var(--blue-300);}
+  .bilan{background:none;border-top:1px solid var(--pink-200);}
+  .bilan textarea{border:none;}
+  .bilan[open] summary, .bilan summary{color:#000;}
+}
+</style>
+</head>
+<body>
+
+<!-- Décor d'ambiance : très discret, disparaît à l'impression -->
+<svg class="decor tl" viewBox="0 0 120 120" aria-hidden="true"><g fill="none" stroke="#EEA9BF" stroke-width="2" stroke-linecap="round"><path d="M18 34c0-9 7-16 16-16s16 7 16 16-7 16-16 16" stroke="#96B6D9"/><path d="M40 22c8-6 20-4 24 6M22 52c-6 8-4 20 6 24"/></g><g fill="#F5CEDC"><circle cx="30" cy="30" r="5"/><circle cx="44" cy="24" r="3.5"/><circle cx="24" cy="46" r="3.5"/></g><circle cx="34" cy="34" r="3" fill="#EF9BB2"/></svg>
+<svg class="decor br" viewBox="0 0 120 120" aria-hidden="true"><g fill="none" stroke="#96B6D9" stroke-width="2" stroke-linecap="round"><path d="M96 70c6 8 6 20-2 26M74 96c-8 4-20 2-24-8"/></g><g fill="#C6D8EC"><circle cx="90" cy="86" r="5"/><circle cx="78" cy="94" r="3.4"/><circle cx="98" cy="74" r="3.4"/></g><circle cx="86" cy="86" r="3" fill="#EF9BB2"/></svg>
+<svg class="decor mr" viewBox="0 0 60 60" aria-hidden="true"><g fill="#F5CEDC" stroke="#EEA9BF" stroke-width="1.5"><path d="M30 30c-8-12-24-8-24 2s16 10 24-2z"/><path d="M30 30c8-12 24-8 24 2s-16 10-24-2z"/></g><line x1="30" y1="18" x2="30" y2="44" stroke="#96B6D9" stroke-width="1.5"/></svg>
+
+<div class="app">
+
+  <!-- ============ EN-TÊTE ============ -->
+  <header class="topbar">
+    <div class="brand">
+      <h1>Cahier Journal</h1>
+      <span class="tag">✿ FLE</span>
+      <span class="subtitle">Français Langue Étrangère · Enseignement secondaire</span>
+      <span class="year">Année scolaire
+        <input id="year" type="text" spellcheck="false" aria-label="Année scolaire" />
+      </span>
+      <span id="status" class="status saved"><span class="dot"></span><span id="statusTxt">Enregistré</span></span>
+    </div>
+  </header>
+
+  <!-- ============ BARRE D'ACTIONS ============ -->
+  <div class="toolbar" role="toolbar" aria-label="Actions du cahier">
+    <button class="btn primary" data-action="add-day">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      Nouvelle journée
+    </button>
+    <button class="btn" data-action="save">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+      Enregistrer
+    </button>
+    <button class="btn ghost" data-action="print">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
+      Imprimer
+    </button>
+    <button class="btn ghost" data-action="pdf">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15h6M9 18h4"/></svg>
+      Exporter en PDF
+    </button>
+  </div>
+
+  <!-- ============ ZONE DES JOURNÉES ============ -->
+  <main id="days"></main>
+
+  <p class="hint">Vos données sont enregistrées automatiquement dans ce navigateur. Ouvrez le fichier depuis votre ordinateur pour une conservation permanente.</p>
+</div>
+
+<!-- ============ FENÊTRE : DÉTAILS PÉDAGOGIQUES ============ -->
+<dialog id="detailsModal">
+  <div class="modal-head">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#4B678C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    <h3>Détails de la séance</h3>
+    <button class="btn ghost sm icononly x" data-action="close-modal" aria-label="Fermer">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="field-grid">
+      <div class="field"><label>Niveau / Classe</label><input data-d="niveau" type="text" placeholder="ex. 2AS Langues étrangères" /></div>
+      <div class="field"><label>Durée</label><input data-d="duree" type="text" placeholder="ex. 1 h / 2 h" /></div>
+      <div class="field"><label>Projet</label><input data-d="projet" type="text" placeholder="Intitulé du projet" /></div>
+      <div class="field"><label>Séquence</label><input data-d="sequence" type="text" placeholder="Intitulé de la séquence" /></div>
+      <div class="field"><label>Séance</label><input data-d="seance" type="text" placeholder="ex. Compréhension de l'écrit" /></div>
+      <div class="field"><label>Activité</label><input data-d="activite" type="text" placeholder="Nature de l'activité" /></div>
+      <div class="field wide"><label>Compétence visée</label><input data-d="competence" type="text" placeholder="Compétence globale / installée" /></div>
+      <div class="field wide"><label>Objectif d'apprentissage</label><textarea data-d="objectif" placeholder="Ce que l'apprenant doit être capable de faire…"></textarea></div>
+      <div class="field wide"><label>Supports</label><input data-d="supports" type="text" placeholder="Manuel, texte, tableau, image, audio…" /></div>
+      <div class="field wide"><label>Remarques / Observations</label><textarea data-d="remarques" placeholder="Différenciation, remédiation, notes…"></textarea></div>
+    </div>
+  </div>
+  <div class="modal-foot">
+    <button class="btn ghost" data-action="close-modal">Annuler</button>
+    <button class="btn primary" data-action="save-modal">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      Valider les détails
+    </button>
+  </div>
+</dialog>
+
+<!-- ============ Datalist des classes (Algérie — secondaire) ============ -->
+<datalist id="classes">
+  <option value="1AS Sciences"></option>
+  <option value="1AS Lettres"></option>
+  <option value="2AS Langues étrangères"></option>
+  <option value="2AS Lettres et philosophie"></option>
+  <option value="2AS Sciences expérimentales"></option>
+  <option value="2AS Mathématiques"></option>
+  <option value="2AS Gestion et économie"></option>
+  <option value="2AS Techniques mathématiques"></option>
+  <option value="3AS Langues étrangères"></option>
+  <option value="3AS Lettres et philosophie"></option>
+  <option value="3AS Sciences expérimentales"></option>
+  <option value="3AS Mathématiques"></option>
+  <option value="3AS Gestion et économie"></option>
+  <option value="3AS Techniques mathématiques"></option>
+</datalist>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   ÉTAT & PERSISTANCE
+   ============================================================ */
+const KEY = 'cahier-journal-fle-v1';
+const $ = (s,r=document)=>r.querySelector(s);
+const uid = ()=> Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const todayISO = ()=> new Date().toISOString().slice(0,10);
+const esc = s => (s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function makeRow(){
+  return {id:uid(), heure:'', classe:'', activites:'', remarques:'',
+    details:{niveau:'',duree:'',projet:'',sequence:'',seance:'',activite:'',competence:'',objectif:'',supports:'',remarques:''}};
+}
+function makeDay(date){ return {id:uid(), date:date||todayISO(), rows:[makeRow()], bilan:''}; }
+function defaultState(){ return {schoolYear:'2026 – 2027', days:[makeDay(todayISO())]}; }
+
+let state;
+try{ state = JSON.parse(localStorage.getItem(KEY)) || defaultState(); }
+catch(e){ state = defaultState(); }
+if(!state.days || !state.days.length) state.days = [makeDay(todayISO())];
+
+/* ---- Sauvegarde (auto + différée) ---- */
+let saveTimer=null, canPersist=true;
+function markDirty(){ setStatus('dirty'); scheduleSave(); }
+function scheduleSave(){ clearTimeout(saveTimer); saveTimer=setTimeout(persist,600); }
+function persist(){
+  try{ localStorage.setItem(KEY, JSON.stringify(state)); setStatus('saved'); }
+  catch(e){ canPersist=false; setStatus('saved','Session en cours'); }
+}
+function setStatus(kind,label){
+  const el=$('#status'), txt=$('#statusTxt');
+  el.className='status '+(kind==='dirty'?'dirty':'saved');
+  txt.textContent = label || (kind==='dirty' ? 'Modification…' : 'Enregistré');
+}
+
+/* ============================================================
+   RENDU
+   ============================================================ */
+const daysEl = $('#days');
+
+function rowHTML(d,r){
+  const on = Object.values(r.details).some(v=>v && v.trim());
+  return `<tr data-row="${r.id}">
+    <td class="col-heure" data-label="Heure">
+      <input class="cell-in" type="time" data-day="${d.id}" data-row="${r.id}" data-field="heure" value="${esc(r.heure)}" aria-label="Heure">
+    </td>
+    <td class="col-classe" data-label="Classe">
+      <input class="cell-in" list="classes" data-day="${d.id}" data-row="${r.id}" data-field="classe" value="${esc(r.classe)}" placeholder="Choisir / saisir" aria-label="Classe">
+    </td>
+    <td class="col-acts" data-label="Activités pédagogiques">
+      <textarea class="cell-area" rows="2" data-day="${d.id}" data-row="${r.id}" data-field="activites" placeholder="Déroulement, tâches, consignes…" aria-label="Activités pédagogiques">${esc(r.activites)}</textarea>
+      <button class="detail-badge ${on?'on':''}" data-action="details" data-day="${d.id}" data-row="${r.id}">
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+        ${on?'Fiche renseignée':'Ajouter projet, séquence, objectif…'}
+      </button>
+    </td>
+    <td class="col-remarques" data-label="Remarques">
+      <textarea class="cell-area" rows="2" data-day="${d.id}" data-row="${r.id}" data-field="remarques" placeholder="Absences, incidents, à revoir…" aria-label="Remarques">${esc(r.remarques)}</textarea>
+    </td>
+    <td class="col-tools" data-label="">
+      <span class="row-tools">
+        <button class="tool gear" title="Détails de la séance" data-action="details" data-day="${d.id}" data-row="${r.id}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 8 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 3.6 15a1.65 1.65 0 0 0-1.51-1H2a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 3.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 8 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 16 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+        <button class="tool" title="Supprimer la ligne" data-action="del-row" data-day="${d.id}" data-row="${r.id}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+        </button>
+      </span>
+    </td>
+  </tr>`;
+}
+
+function dayHTML(d){
+  return `<section class="day" data-day="${d.id}">
+    <div class="day-head">
+      <div class="day-date">
+        <span class="lbl">Journée du</span>
+        <input type="date" data-day="${d.id}" data-field="date" value="${esc(d.date)}" aria-label="Date de la journée">
+      </div>
+      <div class="day-actions">
+        <button class="btn blue sm" data-action="add-row" data-day="${d.id}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Ajouter une séance
+        </button>
+        <button class="btn ghost sm" data-action="dup-day" data-day="${d.id}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Dupliquer
+        </button>
+        <button class="btn ghost sm" data-action="del-day" data-day="${d.id}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+          Supprimer
+        </button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="grid">
+        <thead><tr>
+          <th><span class="th-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2" stroke-linecap="round"/></svg>Heure</span></th>
+          <th><span class="th-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 20h18" stroke-linecap="round"/></svg>Classe</span></th>
+          <th><span class="th-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke-linecap="round"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Activités pédagogiques</span></th>
+          <th><span class="th-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1a5.5 5.5 0 1 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z" stroke-linejoin="round"/></svg>Remarques</span></th>
+          <th></th>
+        </tr></thead>
+        <tbody>${d.rows.map(r=>rowHTML(d,r)).join('')}</tbody>
+      </table>
+    </div>
+    <div class="add-row">
+      <button class="btn ghost sm" data-action="add-row" data-day="${d.id}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Ajouter une séance
+      </button>
+    </div>
+
+    <details class="bilan" ${d.bilan?'open':''}>
+      <summary>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+        Bilan de la journée · Notes personnelles
+      </summary>
+      <textarea data-day="${d.id}" data-field="bilan" placeholder="Ce qui a bien fonctionné, ce qui est à reprendre, préparation du lendemain…">${esc(d.bilan)}</textarea>
+    </details>
+  </section>`;
+}
+
+function render(){
+  $('#year').value = state.schoolYear;
+  if(!state.days.length){
+    daysEl.innerHTML = `<div class="empty"><h2>Bonjour !</h2>
+      <p>Aucune journée pour l'instant. Créez-en une pour commencer votre cahier.</p>
+      <p style="margin-top:16px"><button class="btn primary" data-action="add-day">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Créer une journée</button></p></div>`;
+    return;
+  }
+  daysEl.innerHTML = state.days.map(dayHTML).join('');
+}
+
+/* ============================================================
+   HELPERS D'ACCÈS À L'ÉTAT
+   ============================================================ */
+const findDay = id => state.days.find(d=>d.id===id);
+const findRow = (dId,rId)=>{ const d=findDay(dId); return d && d.rows.find(r=>r.id===rId); };
+
+/* ============================================================
+   ÉDITION DES CHAMPS (délégation — sans re-rendu, focus préservé)
+   ============================================================ */
+function onFieldEdit(e){
+  const t=e.target;
+  if(t.id==='year'){ state.schoolYear=t.value; markDirty(); return; }
+  const {day,row,field}=t.dataset;
+  if(!field) return;
+  if(row){ const r=findRow(day,row); if(r){ r[field]=t.value; markDirty(); } }
+  else if(day){ const d=findDay(day); if(d){ d[field]=t.value; markDirty(); } }
+}
+daysEl.addEventListener('input', onFieldEdit);
+daysEl.addEventListener('change', onFieldEdit);
+$('#year').addEventListener('input', onFieldEdit);
+
+/* ============================================================
+   ACTIONS (boutons — délégation globale)
+   ============================================================ */
+document.addEventListener('click', e=>{
+  const b=e.target.closest('[data-action]'); if(!b) return;
+  const {action,day,row}=b.dataset;
+  switch(action){
+    case 'add-day':   addDay(); break;
+    case 'del-day':   delDay(day); break;
+    case 'dup-day':   dupDay(day); break;
+    case 'add-row':   addRow(day); break;
+    case 'del-row':   delRow(day,row); break;
+    case 'details':   openDetails(day,row); break;
+    case 'save':      persist(); toast('Cahier enregistré','ok'); break;
+    case 'print':     window.print(); break;
+    case 'pdf':       exportPDF(); break;
+    case 'close-modal': $('#detailsModal').close(); break;
+    case 'save-modal':  saveDetails(); break;
+  }
+});
+
+function addDay(){
+  const last=state.days[state.days.length-1];
+  const base=last?last.date:todayISO();
+  const next=new Date(base+'T00:00:00'); next.setDate(next.getDate()+1);
+  state.days.push(makeDay(next.toISOString().slice(0,10)));
+  render(); persist();
+  daysEl.lastElementChild?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function delDay(id){
+  if(state.days.length && !confirm('Supprimer cette journée et toutes ses séances ?')) return;
+  state.days=state.days.filter(d=>d.id!==id); render(); persist();
+}
+function dupDay(id){
+  const d=findDay(id); if(!d) return;
+  const copy=JSON.parse(JSON.stringify(d));
+  copy.id=uid(); copy.rows.forEach(r=>r.id=uid());
+  const i=state.days.indexOf(d);
+  state.days.splice(i+1,0,copy); render(); persist();
+  toast('Journée dupliquée','ok');
+}
+function addRow(dId){ const d=findDay(dId); if(!d) return; d.rows.push(makeRow()); render(); persist(); }
+function delRow(dId,rId){
+  const d=findDay(dId); if(!d) return;
+  d.rows=d.rows.filter(r=>r.id!==rId);
+  if(!d.rows.length) d.rows.push(makeRow());
+  render(); persist();
+}
+
+/* ============================================================
+   FENÊTRE DÉTAILS
+   ============================================================ */
+const modal=$('#detailsModal');
+let editing={day:null,row:null};
+function openDetails(dId,rId){
+  const r=findRow(dId,rId); if(!r) return;
+  editing={day:dId,row:rId};
+  modal.querySelectorAll('[data-d]').forEach(f=>{ f.value = r.details[f.dataset.d]||''; });
+  modal.showModal();
+}
+function saveDetails(){
+  const r=findRow(editing.day,editing.row); if(!r){ modal.close(); return; }
+  modal.querySelectorAll('[data-d]').forEach(f=>{ r.details[f.dataset.d]=f.value; });
+  modal.close(); render(); persist(); toast('Détails enregistrés','ok');
+}
+modal.addEventListener('click', e=>{ // clic sur le fond = fermer
+  const rect=modal.getBoundingClientRect();
+  if(e.clientX<rect.left||e.clientX>rect.right||e.clientY<rect.top||e.clientY>rect.bottom) modal.close();
+});
+
+/* ============================================================
+   IMPRESSION / PDF & TOAST
+   ============================================================ */
+function exportPDF(){
+  toast('Choisissez « Enregistrer au format PDF » dans la fenêtre d’impression','info',3200);
+  setTimeout(()=>window.print(), 700);
+}
+let toastTimer=null;
+function toast(msg,kind='ok',ms=2200){
+  const el=$('#toast');
+  const icon = kind==='info'
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+  el.innerHTML=icon+'<span>'+esc(msg)+'</span>';
+  el.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),ms);
+}
+
+/* ============================================================
+   DÉMARRAGE
+   ============================================================ */
+render();
+setStatus('saved');
+</script>
+</body>
+</html>
